@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -27,7 +28,7 @@ func AccessPlugin(fileName string) (p plugin.Executor, closer func(), err error)
 	client := pg.NewClient(&pg.ClientConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins:         shared.PluginMap,
-		Cmd:             exec.Command(fileName),
+		Cmd:             exec.Command(fmt.Sprintf("./bin/plugin/%s", fileName)),
 		AllowedProtocols: []pg.Protocol{
 			pg.ProtocolGRPC},
 	})
@@ -44,7 +45,7 @@ func AccessPlugin(fileName string) (p plugin.Executor, closer func(), err error)
 		return nil, func() {}, err
 	}
 
-	raw, err := rpcClient.Dispense(fileName)
+	raw, err := rpcClient.Dispense("grpc_plugin")
 	if err != nil {
 		return nil, func() {}, err
 	}

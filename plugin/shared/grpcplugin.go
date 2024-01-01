@@ -71,15 +71,16 @@ func (m *GRPCClient) Execute(act string, params map[string]string) <-chan string
 		for {
 			resp, err := stream.Recv()
 			if err == io.EOF {
-				return
+				break
 			}
 
 			if err == nil {
 				out <- resp.GetMessage()
 			} else {
 				log.Println(err) // dont use panic in your real project
+				break
 			}
-
+			close(out)
 		}
 	}()
 
