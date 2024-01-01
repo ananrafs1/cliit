@@ -13,8 +13,6 @@ type Executor interface {
 	// 	}
 	GetActionMetadata() map[string]map[string]string
 
-	GetMetadata() Metadata
-
 	Execute(act string, params map[string]string) <-chan string
 }
 

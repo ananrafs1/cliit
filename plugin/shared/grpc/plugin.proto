@@ -6,7 +6,6 @@ import "google/protobuf/empty.proto";
 
 service Plugin {
     rpc GetActionMetadata(google.protobuf.Empty) returns (ActionMetadataResponse) {}
-    rpc GetMetadata(google.protobuf.Empty) returns (MetadataResponse) {}
 	rpc Execute(ExecuteRequest) returns (stream ExecuteResponse) {}
 }
 
@@ -18,10 +17,6 @@ message ParameterMetadata {
 	map<string, string> parameterMetadata = 1;
 }
 
-message MetadataResponse {
-	string title = 1;
-	string subtitle = 2;
-}
 
 message ExecuteRequest {
 	string action = 1;

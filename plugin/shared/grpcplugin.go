@@ -42,18 +42,6 @@ func (m *GRPCClient) GetActionMetadata() map[string]map[string]string {
 	return resp
 }
 
-func (m *GRPCClient) GetMetadata() pg.Metadata {
-	resp, err := m.client.GetMetadata(context.Background(), &emptypb.Empty{})
-	if err != nil {
-		return pg.Metadata{}
-	}
-
-	return pg.Metadata{
-		Title:    resp.GetTitle(),
-		Subtitle: resp.GetSubtitle(),
-	}
-}
-
 func (m *GRPCClient) Execute(act string, params map[string]string) <-chan string {
 	stream, err := m.client.Execute(context.Background(), &proto.ExecuteRequest{
 		Action: act,
@@ -105,17 +93,6 @@ func (m *GRPCServer) GetActionMetadata(
 		}
 	}
 	return protoResponse, nil
-}
-
-func (m *GRPCServer) GetMetadata(
-	ctx context.Context, req *emptypb.Empty) (*proto.MetadataResponse, error) {
-	v := m.Impl.GetMetadata()
-
-	return &proto.MetadataResponse{
-		Title:    v.Title,
-		Subtitle: v.Subtitle,
-	}, nil
-
 }
 
 func (m *GRPCServer) Execute(req *proto.ExecuteRequest, stream proto.Plugin_ExecuteServer) error {

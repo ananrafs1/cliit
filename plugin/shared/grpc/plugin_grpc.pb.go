@@ -20,7 +20,6 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginClient interface {
 	GetActionMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ActionMetadataResponse, error)
-	GetMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataResponse, error)
 	Execute(ctx context.Context, in *ExecuteRequest, opts ...grpc.CallOption) (Plugin_ExecuteClient, error)
 }
 
@@ -35,15 +34,6 @@ func NewPluginClient(cc grpc.ClientConnInterface) PluginClient {
 func (c *pluginClient) GetActionMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ActionMetadataResponse, error) {
 	out := new(ActionMetadataResponse)
 	err := c.cc.Invoke(ctx, "/proto.Plugin/GetActionMetadata", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *pluginClient) GetMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataResponse, error) {
-	out := new(MetadataResponse)
-	err := c.cc.Invoke(ctx, "/proto.Plugin/GetMetadata", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +77,6 @@ func (x *pluginExecuteClient) Recv() (*ExecuteResponse, error) {
 // for forward compatibility
 type PluginServer interface {
 	GetActionMetadata(context.Context, *emptypb.Empty) (*ActionMetadataResponse, error)
-	GetMetadata(context.Context, *emptypb.Empty) (*MetadataResponse, error)
 	Execute(*ExecuteRequest, Plugin_ExecuteServer) error
 }
 
@@ -97,9 +86,6 @@ type UnimplementedPluginServer struct {
 
 func (UnimplementedPluginServer) GetActionMetadata(context.Context, *emptypb.Empty) (*ActionMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActionMetadata not implemented")
-}
-func (UnimplementedPluginServer) GetMetadata(context.Context, *emptypb.Empty) (*MetadataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMetadata not implemented")
 }
 func (UnimplementedPluginServer) Execute(*ExecuteRequest, Plugin_ExecuteServer) error {
 	return status.Errorf(codes.Unimplemented, "method Execute not implemented")
@@ -130,24 +116,6 @@ func _Plugin_GetActionMetadata_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PluginServer).GetActionMetadata(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Plugin_GetMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PluginServer).GetMetadata(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Plugin/GetMetadata",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PluginServer).GetMetadata(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -183,10 +151,6 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetActionMetadata",
 			Handler:    _Plugin_GetActionMetadata_Handler,
-		},
-		{
-			MethodName: "GetMetadata",
-			Handler:    _Plugin_GetMetadata_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

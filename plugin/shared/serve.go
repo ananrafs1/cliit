@@ -2,7 +2,6 @@ package shared
 
 import (
 	pg "github.com/ananrafs1/cliit/plugin"
-	"github.com/hashicorp/go-hclog"
 	plugin "github.com/hashicorp/go-plugin"
 )
 
@@ -16,9 +15,6 @@ func Serve(exec pg.Executor) func() {
 
 			// A non-nil value here enables gRPC serving for this plugin...
 			GRPCServer: plugin.DefaultGRPCServer,
-			Logger: hclog.New(&hclog.LoggerOptions{
-				Level: hclog.Off,
-			}),
 		})
 	}
 }

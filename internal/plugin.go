@@ -8,6 +8,7 @@ import (
 
 	"github.com/ananrafs1/cliit/plugin"
 	"github.com/ananrafs1/cliit/plugin/shared"
+	"github.com/hashicorp/go-hclog"
 	pg "github.com/hashicorp/go-plugin"
 )
 
@@ -30,7 +31,11 @@ func AccessPlugin(fileName string) (p plugin.Executor, closer func(), err error)
 		Plugins:         shared.PluginMap,
 		Cmd:             exec.Command(fmt.Sprintf("./bin/plugin/%s", fileName)),
 		AllowedProtocols: []pg.Protocol{
-			pg.ProtocolGRPC},
+			pg.ProtocolGRPC,
+		},
+		Logger: hclog.New(&hclog.LoggerOptions{
+			Level: hclog.Off,
+		}),
 	})
 
 	closer = func() { client.Kill() }
