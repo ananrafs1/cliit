@@ -1,0 +1,33 @@
+syntax = "proto3";
+package proto;
+option go_package = "plugin/shared/grpc";
+
+import "google/protobuf/empty.proto";
+
+service Plugin {
+    rpc GetActionMetadata(google.protobuf.Empty) returns (ActionMetadataResponse) {}
+    rpc GetMetadata(google.protobuf.Empty) returns (MetadataResponse) {}
+	rpc Execute(ExecuteRequest) returns (stream ExecuteResponse) {}
+}
+
+message ActionMetadataResponse {
+	map<string, ParameterMetadata> actionParameter = 1;
+}
+
+message ParameterMetadata { 
+	map<string, string> parameterMetadata = 1;
+}
+
+message MetadataResponse {
+	string title = 1;
+	string subtitle = 2;
+}
+
+message ExecuteRequest {
+	string action = 1;
+	ParameterMetadata params = 2;
+}
+
+message ExecuteResponse {
+	string message = 1;
+}

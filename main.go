@@ -25,52 +25,53 @@ func Exec() {
 			break
 		}
 
-		pluginSelected, err := SelectPlugin()
-		if err != nil {
-			log.Fatalf(err.Error())
-		}
-
-		action, params := GenerateParameter(pluginSelected.GetActionMetadata())
-
-		if action == "quit" {
-			Exec()
-			return
-		}
-
-		msg := pluginSelected.Execute(action, params)
-
-		spinner.New().Title("Execute ...").Action(func() {
-			for m := range msg {
-				fmt.Println(m)
+		func(retry *bool) {
+			pluginSelected, closer, err := SelectPlugin()
+			if err != nil {
+				log.Fatalf(err.Error())
 			}
-		}).Run()
+			defer closer()
 
-		time.Sleep(2 * time.Second)
+			action, params := GenerateParameter(pluginSelected.GetActionMetadata())
+			if action == "quit" {
+				return
+			}
 
-		retryForm := huh.NewForm(
-			huh.NewGroup(
-				huh.NewConfirm().
-					Title("Are you want to try Again ?").
-					Value(&retry),
-			),
-		)
+			msg := pluginSelected.Execute(action, params)
 
-		err = retryForm.Run()
-		if err != nil {
-			log.Fatalf("error on Retry form")
-		}
+			spinner.New().Title("Execute ...").Action(func() {
+				for m := range msg {
+					fmt.Println(m)
+				}
+			}).Run()
+
+			time.Sleep(2 * time.Second)
+
+			retryForm := huh.NewForm(
+				huh.NewGroup(
+					huh.NewConfirm().
+						Title("Are you want to try Again ?").
+						Value(retry),
+				),
+			)
+
+			err = retryForm.Run()
+			if err != nil {
+				log.Fatalf("error on Retry form")
+			}
+
+		}(&retry)
 
 	}
 
 }
 
-func SelectPlugin() (plugin.Executor, error) {
+func SelectPlugin() (plugin.Executor, func(), error) {
 	pluginList := internal.GetPluginList()
 	pluginOptionList := []huh.Option[string]{}
-	for _, v := range pluginList {
-		metadata := v.GetMetadata()
+	for _, fileName := range pluginList {
 		pluginOptionList = append(pluginOptionList,
-			huh.NewOption(fmt.Sprintf("[%s] %s", metadata.Title, metadata.Subtitle), metadata.Title),
+			huh.NewOption(fileName, fileName),
 		)
 	}
 
@@ -89,12 +90,7 @@ func SelectPlugin() (plugin.Executor, error) {
 		log.Fatalf("ERROR %s", err)
 	}
 
-	pluginSelected, ok := pluginList[*pluginSelectedTitle]
-	if !ok {
-		return nil, fmt.Errorf("err no plugin found")
-	}
-
-	return pluginSelected, nil
+	return internal.AccessPlugin(*pluginSelectedTitle)
 }
 
 func GenerateParameter(actionParamMap map[string]map[string]string) (string, map[string]string) {
