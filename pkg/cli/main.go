@@ -16,7 +16,6 @@ func main() {
 }
 
 func Exec() {
-
 	var (
 		retry = true
 	)
@@ -37,33 +36,33 @@ func Exec() {
 				return
 			}
 
-			msg := pluginSelected.Execute(action, params)
-
 			spinner.New().Title("Execute ...").Action(func() {
-				for m := range msg {
-					fmt.Println(m)
-				}
+				ListenResponse(pluginSelected.Execute(action, params))
 			}).Run()
 
 			time.Sleep(2 * time.Second)
 
-			retryForm := huh.NewForm(
-				huh.NewGroup(
-					huh.NewConfirm().
-						Title("Are you want to try Again ?").
-						Value(retry),
-				),
-			)
-
-			err = retryForm.Run()
-			if err != nil {
-				log.Fatalf("error on Retry form")
-			}
+			createRetryForm(retry)
 
 		}(&retry)
 
 	}
 
+}
+
+func createRetryForm(retry *bool) {
+	retryForm := huh.NewForm(
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("Are you want to try Again ?").
+				Value(retry),
+		),
+	)
+
+	err := retryForm.Run()
+	if err != nil {
+		log.Fatalf("error on Retry form")
+	}
 }
 
 func SelectPlugin() (plugin.Executor, func(), error) {
@@ -91,6 +90,12 @@ func SelectPlugin() (plugin.Executor, func(), error) {
 	}
 
 	return internal.AccessPlugin(*pluginSelectedTitle)
+}
+
+func ListenResponse(response <-chan string) {
+	for m := range response {
+		fmt.Println(m)
+	}
 }
 
 func GenerateParameter(actionParamMap map[string]map[string]string) (string, map[string]string) {
